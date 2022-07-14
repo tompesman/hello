@@ -6,7 +6,12 @@ defmodule HelloWeb.LayoutView do
   @compile {:no_warn_undefined, {Routes, :live_dashboard_path, 2}}
 
   def hostname() do
-    {:ok, hostname} = :inet.gethostname()
-    hostname
+    case HTTPoison.get(
+           "http://metadata.google.internal/computeMetadata/v1/instance/id",
+           [{"Metadata-Flavor", "Google"}]
+         ) do
+      {:ok, %HTTPoison.Response{body: body}} -> body
+      {:error, %HTTPoison.Error{reason: reason}} -> reason
+    end
   end
 end

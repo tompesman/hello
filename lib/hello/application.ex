@@ -11,7 +11,7 @@ defmodule Hello.Application do
       # Start the Telemetry supervisor
       HelloWeb.Telemetry,
       # Start the PubSub system
-      {Phoenix.PubSub, name: Hello.PubSub},
+      pubsub(System.get_env("REDISHOST")),
       # Start the Endpoint (http/https)
       HelloWeb.Endpoint
       # Start a worker by calling: Hello.Worker.start_link(arg)
@@ -30,5 +30,12 @@ defmodule Hello.Application do
   def config_change(changed, _new, removed) do
     HelloWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp pubsub(nil), do: {Phoenix.PubSub, name: Hello.PubSub}
+
+  defp pubsub(host) do
+    {Phoenix.PubSub,
+     name: Hello.PubSub, adapter: Phoenix.PubSub.Redis, host: host, node_name: UUID.uuid4()}
   end
 end
